@@ -1,0 +1,30 @@
+---
+import { localPath } from '../lib/blog';
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="Anyway — Notes on kernels, AI, and hardware. 한국어와 영어로 기록합니다." />
+    <title>Anyway — Choose your language</title>
+    <link rel="icon" href={localPath('favicon.svg')} type="image/svg+xml" />
+  </head>
+  <body>
+    <main class="shell landing" data-language-root={localPath()}>
+      <p class="eyebrow">NOTES ON UNDERSTANDING</p>
+      <h1>Anyway<span class="accent">.</span></h1>
+      <p>AI can do it. I want to understand it anyway.</p>
+      <nav aria-label="Language / 언어"><a href={localPath('ko/')} lang="ko" data-language="ko">한국어 →</a><a href={localPath('en/')} lang="en" data-language="en">English →</a></nav>
+    </main>
+    <script>
+      import { chooseLanguage, languageStorageKey } from '../lib/language.mjs';
+      let saved: string | null = null;
+      try { saved = localStorage.getItem(languageStorageKey); } catch { /* Browser language is the fallback. */ }
+      const lang = chooseLanguage(saved, navigator.languages?.length ? navigator.languages : [navigator.language]);
+      const base = document.querySelector<HTMLElement>('[data-language-root]')!.dataset.languageRoot!;
+      window.location.replace(`${base}${lang}/${window.location.search}${window.location.hash}`);
+    </script>
+  </body>
+</html>

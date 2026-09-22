@@ -1,0 +1,57 @@
+---
+import Base from '../../layouts/Base.astro';
+import { languages, localPath, publishedPosts, type Language } from '../../lib/blog';
+import { uniqueTags, tagPath } from '../../lib/tags';
+export function getStaticPaths() { return languages.map(lang => ({ params: { lang } })); }
+const lang = Astro.params.lang as Language;
+const tags = uniqueTags((await publishedPosts()).filter(p => p.data.lang === lang).flatMap(p => p.data.tags));
+---
+<Base lang={lang} title={lang === 'ko' ? '검색 · 태그' : 'Search · Tags'} alternate={localPath(`${lang === 'ko' ? 'en' : 'ko'}/search/`)}>
+<section class="writing tag-page" data-search data-index={localPath('search-index.json')} data-lang={lang}>
+  <p class="eyebrow">EXPLORE THE NOTES</p><h1>{lang === 'ko' ? '검색 · 태그' : 'Search · Tags'}</h1>
+  <form role="search"><label for="query">{lang === 'ko' ? '제목, 본문, 태그 검색 (한·영 전체)' : 'Search titles, text, and tags (both languages)'}</label><div class="search-field"><input id="query" name="q" type="search" /><button type="submit">{lang === 'ko' ? '검색' : 'Search'}</button></div></form>
+  <div class="topics">{tags.map(tag => <a href={tagPath(lang, tag)}>#{tag}</a>)}</div>
+  <p id="search-status" role="status" aria-live="polite"></p><ol id="search-results" class="post-list"></ol>
+  <noscript>{lang === 'ko' ? '본문 검색에는 JavaScript가 필요합니다. 위 태그 링크로 글을 탐색할 수 있습니다.' : 'Full-text search requires JavaScript. Browse the tag links above instead.'}</noscript>
+</section>
+</Base>
+<script>
+import { rankEntries } from '../../lib/search.mjs';
+type Entry = {title: string; description: string; body: string; tags: string[]; path: string; lang: string};
+const root = document.querySelector<HTMLElement>('[data-search]')!;
+const form = root.querySelector('form')!;
+const input = root.querySelector<HTMLInputElement>('input')!;
+const status = document.querySelector('#search-status')!;
+const results = document.querySelector('#search-results')!;
+let entries: Promise<Entry[]> | undefined;
+let version = 0;
+async function search() {
+  const current = ++version;
+  const query = input.value.trim();
+  const url = new URL(location.href); query ? url.searchParams.set('q', query) : url.searchParams.delete('q'); history.replaceState(null, '', url);
+  results.replaceChildren();
+  if (!query) { status.textContent = ''; return; }
+  status.textContent = root.dataset.lang === 'ko' ? '검색 중…' : 'Searching…';
+  try {
+    entries ??= fetch(root.dataset.index!).then(response => { if (!response.ok) throw new Error('Index unavailable'); return response.json(); });
+    const matches = rankEntries(await entries, query) as Entry[];
+    if (current !== version) return;
+    status.textContent = root.dataset.lang === 'ko' ? `${matches.length}개 결과` : `${matches.length} results`;
+    for (const entry of matches) {
+      const li = document.createElement('li');
+      const language = document.createElement('span'); language.textContent = entry.lang === 'ko' ? '한국어' : 'English';
+      const content = document.createElement('div');
+      const title = document.createElement('h3'); const link = document.createElement('a'); link.href = entry.path; link.textContent = entry.title; title.append(link);
+      const description = document.createElement('p'); description.textContent = entry.description;
+      content.append(title, description); li.append(language, content); results.append(li);
+    }
+  } catch {
+    if (current !== version) return;
+    entries = undefined;
+    status.textContent = root.dataset.lang === 'ko' ? '검색을 불러오지 못했습니다. 다시 검색하거나 태그를 이용해 주세요.' : 'Search could not load. Retry or use the tags above.';
+  }
+}
+form.addEventListener('submit', event => { event.preventDefault(); void search(); });
+input.value = new URL(location.href).searchParams.get('q') ?? '';
+void search();
+</script>

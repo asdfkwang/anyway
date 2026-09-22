@@ -1,0 +1,9 @@
+---
+import type { Language } from '../lib/blog';
+interface Props { translationKey: string; lang: Language }
+const { translationKey, lang } = Astro.props;
+// Future giscus integration point. Use translationKey with data-mapping="specific"
+// and data-term to share one discussion across both translations.
+// No third-party script is loaded until giscus is explicitly configured.
+---
+<div id="comments" data-discussion-key={translationKey} data-language={lang}></div>

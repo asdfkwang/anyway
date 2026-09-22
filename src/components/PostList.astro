@@ -1,0 +1,13 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { postPath, dateLabel, type Language } from '../lib/blog';
+import { tagPath, uniqueTags } from '../lib/tags';
+interface Props { posts: CollectionEntry<'posts'>[]; lang: Language }
+const { posts, lang } = Astro.props;
+---
+<ol class="post-list">
+  {posts.map(post => <li>
+    <time datetime={post.data.publishedAt.toISOString()}>{dateLabel(post.data.publishedAt, lang)}</time>
+    <div><p class="post-tags">{uniqueTags(post.data.tags).map(tag => <a href={tagPath(lang, tag)}>#{tag} </a>)}</p><h3><a href={postPath(post)}>{post.data.title}<span aria-hidden="true"> ↗</span></a></h3><p>{post.data.description}</p></div>
+  </li>)}
+</ol>

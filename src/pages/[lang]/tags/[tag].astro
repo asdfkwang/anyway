@@ -1,0 +1,18 @@
+---
+import Base from '../../../layouts/Base.astro';
+import PostList from '../../../components/PostList.astro';
+import { publishedPosts, languages, localPath, type Language } from '../../../lib/blog';
+import { uniqueTags, normalizeTag, tagPath, tagSlug } from '../../../lib/tags';
+export async function getStaticPaths() {
+  const posts = await publishedPosts();
+  return languages.flatMap(lang => uniqueTags(posts.filter(p => p.data.lang === lang).flatMap(p => p.data.tags)).map(tag => ({ params: { lang, tag: tagSlug(tag) }, props: { tag } })));
+}
+const lang = Astro.params.lang as Language;
+const { tag } = Astro.props;
+const posts = (await publishedPosts()).filter(p => p.data.tags.some(t => normalizeTag(t) === tag));
+const other = lang === 'ko' ? 'en' : 'ko';
+const hasOther = posts.some(p => p.data.lang === other);
+---
+<Base lang={lang} title={`#${tag}`} alternate={hasOther ? tagPath(other, tag) : localPath(`${other}/`)} translationAvailable={hasOther}>
+  <section class="writing tag-page"><p class="eyebrow">TAG / 태그</p><h1>#{tag}</h1><PostList posts={posts.filter(p => p.data.lang === lang)} lang={lang} /></section>
+</Base>

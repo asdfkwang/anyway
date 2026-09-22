@@ -1,0 +1,41 @@
+---
+import { tagPath, uniqueTags } from '../../../lib/tags';
+import { aiPath, absolute } from '../../../lib/discovery';
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import Comments from '../../../components/Comments.astro';
+import { publishedPosts, postPath, localPath, copy, dateLabel } from '../../../lib/blog';
+export async function getStaticPaths() {
+  const posts = await publishedPosts();
+  return posts.map(post => ({
+    params: { lang: post.data.lang, slug: post.data.translationKey },
+    props: { post, translation: posts.find(other => other.data.translationKey === post.data.translationKey && other.data.lang !== post.data.lang) },
+  }));
+}
+const { post, translation } = Astro.props;
+const { lang } = post.data;
+const { Content } = await render(post);
+const alternate = translation ? postPath(translation) : localPath(`${lang === 'ko' ? 'en' : 'ko'}/`);
+---
+<Base lang={lang} title={post.data.title} description={post.data.description} alternate={alternate} translationAvailable={!!translation} aiUrl={aiPath(post.data.translationKey)} structuredData={{
+  '@context': 'https://schema.org', '@type': 'BlogPosting',
+  headline: post.data.title, description: post.data.description,
+  inLanguage: lang, datePublished: post.data.publishedAt.toISOString(),
+  keywords: uniqueTags(post.data.tags),
+  mainEntityOfPage: absolute(postPath(post), Astro.site),
+  url: absolute(postPath(post), Astro.site),
+}}>
+  <article class="article">
+    <a class="back-link" href={localPath(`${lang}/`)}>← {copy[lang].back}</a>
+    <header class="article-header">
+      <p class="eyebrow">{uniqueTags(post.data.tags).map(tag => <a href={tagPath(lang, tag)}>#{tag} </a>)}</p>
+      <h1>{post.data.title}</h1>
+      <p class="description">{post.data.description}</p>
+      <time datetime={post.data.publishedAt.toISOString()}>{dateLabel(post.data.publishedAt, lang)}</time>
+      {!translation && <p class="translation-note">{copy[lang].missing}</p>}
+    </header>
+    <div class="prose"><Content /></div>
+    <p class="ai-link"><a href={aiPath(post.data.translationKey)}>{lang === 'ko' ? 'AI용 Markdown · 한/영 본문' : 'AI-readable Markdown · Korean / English'} ↗</a></p>
+    <Comments translationKey={post.data.translationKey} lang={lang} />
+  </article>
+</Base>

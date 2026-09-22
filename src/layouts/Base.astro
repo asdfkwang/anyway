@@ -1,0 +1,54 @@
+---
+import '../styles/global.css';
+import { copy, localPath, type Language } from '../lib/blog';
+interface Props { lang: Language; title?: string; description?: string; alternate?: string; translationAvailable?: boolean; aiUrl?: string; structuredData?: Record<string, unknown> }
+const { lang, title = 'Anyway', description = copy[lang].tagline, alternate, translationAvailable = true, aiUrl, structuredData } = Astro.props;
+const other = lang === 'ko' ? 'en' : 'ko';
+const target = alternate ?? localPath(`${other}/`);
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f7f5ef" />
+    <title>{title === 'Anyway' ? title : `${title} — Anyway`}</title>
+    <link rel="icon" href={localPath('favicon.svg')} type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    {translationAvailable && <link rel="alternate" hreflang={other} href={new URL(target, Astro.site)} />}
+    <link rel="sitemap" type="application/xml" href={localPath('sitemap.xml')} />
+    <link rel="alternate" type="application/json" title="Full-text index" href={localPath('search-index.json')} />
+    {aiUrl && <link rel="alternate" type="text/markdown" title="AI-readable article" href={aiUrl} />}
+    {structuredData && <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="Anyway" />
+    <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
+  </head>
+  <body>
+    <a class="skip" href="#main">{copy[lang].skip}</a>
+    <header class="site-header shell">
+      <a class="wordmark" href={localPath(`${lang}/`)}>Anyway<span aria-hidden="true">↗</span></a>
+      <nav aria-label={lang === 'ko' ? '언어 선택' : 'Language selection'}>
+        <a href={localPath(`${lang}/search/`)}>{lang === 'ko' ? '검색' : 'Search'}</a>
+        <span class="current-language">{lang === 'ko' ? '한국어' : 'English'}</span>
+        <span aria-hidden="true">/</span>
+        <a href={target} data-language={other} lang={other} title={translationAvailable ? undefined : copy[lang].missing}>{other === 'ko' ? '한국어' : 'English'} ↗</a>
+      </nav>
+    </header>
+    <main id="main" class="shell"><slot /></main>
+    <footer class="shell"><span>Anyway</span><span><a href={localPath('llms.txt')}>AI / llms.txt</a> · Stay curious.</span></footer>
+    <script>
+      import { languageStorageKey } from '../lib/language.mjs';
+      document.querySelectorAll<HTMLAnchorElement>('[data-language]').forEach(link => {
+        link.addEventListener('click', () => {
+          try { localStorage.setItem(languageStorageKey, link.dataset.language!); } catch { /* Navigation still works without storage. */ }
+        });
+      });
+    </script>
+  </body>
+</html>

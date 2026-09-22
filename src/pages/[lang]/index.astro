@@ -1,0 +1,23 @@
+---
+import PostList from '../../components/PostList.astro';
+import { uniqueTags, tagPath } from '../../lib/tags';
+import Base from '../../layouts/Base.astro';
+import { languages, copy, publishedPosts, type Language } from '../../lib/blog';
+export function getStaticPaths() { return languages.map(lang => ({ params: { lang } })); }
+const lang = Astro.params.lang as Language;
+const posts = (await publishedPosts()).filter(post => post.data.lang === lang);
+---
+<Base lang={lang}>
+  <section class="hero">
+    <p class="eyebrow">NOTES ON UNDERSTANDING / 이해의 기록</p>
+    <h1>Understand it<br /><em>anyway<span class="accent">.</span></em></h1>
+    <p class="tagline">{copy[lang].tagline}</p>
+    <p class="intro">{copy[lang].intro}</p>
+    <div class="topics">{uniqueTags(posts.flatMap(post => post.data.tags)).map(tag => <a href={tagPath(lang, tag)}>#{tag}</a>)}</div>
+  </section>
+  <section class="writing" aria-labelledby="writing-title">
+    <div class="section-heading"><h2 id="writing-title">{copy[lang].posts}</h2><span>{String(posts.length).padStart(2, '0')} ENTRIES</span></div>
+    {posts.length === 0 && <p>{copy[lang].empty}</p>}
+    <PostList posts={posts} lang={lang} />
+  </section>
+</Base>
