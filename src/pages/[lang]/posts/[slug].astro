@@ -14,10 +14,11 @@ export async function getStaticPaths() {
 }
 const { post, translation } = Astro.props;
 const { lang } = post.data;
+const aiUrl = lang === 'en' || translation?.data.lang === 'en' ? aiPath(post.data.translationKey) : undefined;
 const { Content } = await render(post);
 const alternate = translation ? postPath(translation) : localPath(`${lang === 'ko' ? 'en' : 'ko'}/`);
 ---
-<Base lang={lang} title={post.data.title} description={post.data.description} alternate={alternate} translationAvailable={!!translation} aiUrl={aiPath(post.data.translationKey)} structuredData={{
+<Base lang={lang} title={post.data.title} description={post.data.description} alternate={alternate} translationAvailable={!!translation} aiUrl={aiUrl} structuredData={{
   '@context': 'https://schema.org', '@type': 'BlogPosting',
   headline: post.data.title, description: post.data.description,
   inLanguage: lang, datePublished: post.data.publishedAt.toISOString(),
@@ -35,7 +36,7 @@ const alternate = translation ? postPath(translation) : localPath(`${lang === 'k
       {!translation && <p class="translation-note">{copy[lang].missing}</p>}
     </header>
     <div class="prose"><Content /></div>
-    <p class="ai-link"><a href={aiPath(post.data.translationKey)}>{lang === 'ko' ? 'AI용 핵심 요약 · Markdown' : 'Key facts for AI · Markdown'} ↗</a></p>
+    {aiUrl && <p class="ai-link"><a href={aiUrl}>{lang === 'ko' ? 'AI용 영어 요약 · Markdown' : 'English summary for AI · Markdown'} ↗</a></p>}
     <Comments translationKey={post.data.translationKey} lang={lang} />
   </article>
 </Base>

@@ -5,16 +5,7 @@ lang: ko
 translationKey: rpi-kernel-lab-setup
 publishedAt: 2026-09-23
 tags: [Raspberry-Pi, Linux, Kernel, UART, Ethernet, Upstream]
-aiSummary: |
-  - 목표: Raspberry Pi 5에서 upstream Linux에 제출할 커널 패치를 테스트할 환경 구성.
-  - 장비: Raspberry Pi 5, Sipeed RV-Debugger Plus, 점퍼선, 개발 PC.
-  - UART 배선: Pi 물리 핀 8(GPIO14/TX) → 어댑터 RX, 핀 10(GPIO15/RX) → 어댑터 TX, 핀 6(GND) → GND. Pi 전원은 별도 공급.
-  - 관찰: 자체 빌드 커널 실험에서 UART는 Image/DTB 로딩 메시지 이후 조용해짐. GCC 재빌드에서도 비슷한 증상.
-  - 확인된 결과: 이후 Debian 이미지에서는 GPIO UART가 조용해도 HDMI 로그인 화면이 표시됨. 이전 모든 커널의 부팅 성공을 뜻하지는 않음.
-  - 선택한 구성: PC에 UART와 Ethernet을 직접 연결. UART는 로그 확인, Ethernet은 정상 환경에서 SSH·파일 전송에 사용하려는 계획.
-  - 상태: 전체 구성 검증은 미완료. Ethernet IP/드라이버, 자체 빌드 커널 부팅, GPIO UART, 원격 리셋·복구를 각각 확인해야 함.
-  - 다음 실험: 정상 Debian 환경 보존 → 대응 소스와 설정으로 커널 재빌드 → HDMI 부팅 검증 → UART 변경 및 개발 패치를 별도로 적용.
-  - 범위: 개인 실험 기록이며 모든 Pi 5/커널 버전에 적용되는 설치 가이드가 아님. 보드 지원 변경과 upstream 제출 패치는 분리 관리할 예정.
+
 ---
 
 리눅스 커널에 패치를 보내보고 싶었다.

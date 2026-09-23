@@ -92,11 +92,11 @@ MDX에서는 Astro 컴포넌트를 import할 수 있습니다. Canvas, SVG, 브�
 
 - 한국어 HTML: `/anyway/ko/posts/<translationKey>/`
 - 영어 HTML: `/anyway/en/posts/<translationKey>/`
-- AI용 Markdown: `/anyway/ai/<translationKey>.md` — 공개된 한·영 핵심 요약, 원문 URL, 날짜, 태그를 한 문서에 포함
+- AI용 Markdown: `/anyway/ai/<translationKey>.md` — 영어 핵심 요약과 태그, 날짜, 한·영 원문 URL을 한 문서에 포함
 
 AI 문서를 따로 작성할 필요는 없습니다. **번역 자체는 자동 생성하지 않습니다.** 한·영 원고를 작성하면 함께 발행되며, 한 언어만 작성했다면 해당 언어만 발행됩니다. 초안은 AI 문서·검색 인덱스·태그·사이트맵에서도 제외됩니다.
 
-AI 문서는 각 글 frontmatter의 `aiSummary: |`에 작성한 핵심 요약을 사용합니다. 목표·확인된 관찰·선택한 구성·아직 검증하지 않은 작업을 구분해서 적으세요. 생략하면 `description`을 사용하며, 전체 본문은 AI 문서에 복제하지 않습니다. 한·영 원문을 수정할 때 요약도 함께 갱신하세요.
+AI 문서는 영문 글 frontmatter의 `aiSummary: |`에 작성한 핵심 요약을 사용합니다. 목표·확인된 관찰·선택한 구성·아직 검증하지 않은 작업을 구분해서 적으세요. 생략하면 영문 `description`을 사용하며, 전체 본문은 AI 문서에 복제하지 않습니다. 한·영 원문을 수정할 때 영어 요약도 함께 갱신하세요. 공개된 영문 글이 없으면 해당 AI 문서와 링크는 생성하지 않습니다. `llms.txt`의 제목과 설명도 영어로 제공합니다.
 
 검색 인덱스의 본문은 Markdown/MDX의 렌더링된 본문에서 추출합니다. 코드 블록, 링크, 표, 이미지의 대체 텍스트를 보존하며 링크는 절대 URL로 변환합니다. MDX import문이나 실행 스크립트는 내보내지 않습니다. Canvas·3D·클라이언트 전용 컴포넌트는 그림 자체를 텍스트로 변환할 수 없으므로 **같은 본문에 설명, 주요 수치, 결론을 텍스트로 적어 주세요.** React 등 새로운 통합을 추가할 때는 `src/lib/discovery.ts`의 Astro container 렌더러 설정도 검토해야 합니다.
 

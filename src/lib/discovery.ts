@@ -39,17 +39,18 @@ export async function readableBody(post: CollectionEntry<'posts'>, site: URL | u
   return converter.turndown(html);
 }
 export async function searchEntries(site: URL | undefined) {
-  return Promise.all((await publishedPosts()).map(async post => ({
+  const posts = await publishedPosts();
+  return Promise.all(posts.map(async post => ({
     id: post.data.translationKey,
     lang: post.data.lang,
     title: post.data.title,
     description: post.data.description,
-    aiSummary: post.data.aiSummary ?? post.data.description,
+    aiSummary: posts.find(p => p.data.lang === 'en' && p.data.translationKey === post.data.translationKey)?.data.aiSummary ?? posts.find(p => p.data.lang === 'en' && p.data.translationKey === post.data.translationKey)?.data.description ?? null,
     tags: uniqueTags(post.data.tags),
     publishedAt: post.data.publishedAt.toISOString(),
     url: absolute(postPath(post), site),
     path: postPath(post),
-    ai: absolute(aiPath(post.data.translationKey), site),
+    ai: posts.some(p => p.data.lang === 'en' && p.data.translationKey === post.data.translationKey) ? absolute(aiPath(post.data.translationKey), site) : null,
     body: await readableBody(post, site),
   })));
 }
