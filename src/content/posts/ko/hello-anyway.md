@@ -1,6 +1,7 @@
 ---
 title: '어쨌든, 직접 이해하고 싶어서'
 description: 'Anyway의 첫 기록. 답을 얻는 것에서 한 걸음 더 들어가 보기.'
+draft: true
 lang: ko
 translationKey: hello-anyway
 publishedAt: 2026-09-22

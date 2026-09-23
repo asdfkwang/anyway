@@ -44,6 +44,7 @@ export async function searchEntries(site: URL | undefined) {
     lang: post.data.lang,
     title: post.data.title,
     description: post.data.description,
+    aiSummary: post.data.aiSummary ?? post.data.description,
     tags: uniqueTags(post.data.tags),
     publishedAt: post.data.publishedAt.toISOString(),
     url: absolute(postPath(post), site),

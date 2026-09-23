@@ -7,6 +7,7 @@ const posts = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    aiSummary: z.string().trim().min(1).optional(),
     lang: z.enum(['ko', 'en']),
     translationKey: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
     publishedAt: z.coerce.date(),

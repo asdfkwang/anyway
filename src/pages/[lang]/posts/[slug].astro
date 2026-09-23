@@ -35,7 +35,7 @@ const alternate = translation ? postPath(translation) : localPath(`${lang === 'k
       {!translation && <p class="translation-note">{copy[lang].missing}</p>}
     </header>
     <div class="prose"><Content /></div>
-    <p class="ai-link"><a href={aiPath(post.data.translationKey)}>{lang === 'ko' ? 'AI용 Markdown · 한/영 본문' : 'AI-readable Markdown · Korean / English'} ↗</a></p>
+    <p class="ai-link"><a href={aiPath(post.data.translationKey)}>{lang === 'ko' ? 'AI용 핵심 요약 · Markdown' : 'Key facts for AI · Markdown'} ↗</a></p>
     <Comments translationKey={post.data.translationKey} lang={lang} />
   </article>
 </Base>

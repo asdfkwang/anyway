@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { publishedPosts, postPath } from '../../lib/blog';
-import { absolute, readableBody } from '../../lib/discovery';
+import { absolute } from '../../lib/discovery';
 import { uniqueTags } from '../../lib/tags';
 export async function getStaticPaths() {
   const posts = await publishedPosts();
@@ -10,7 +10,7 @@ export async function getStaticPaths() {
 }
 export const GET: APIRoute = async ({ props, site }) => {
   const posts = props.posts as Awaited<ReturnType<typeof publishedPosts>>;
-  const sections = await Promise.all(posts.map(async post => `## ${post.data.lang === 'ko' ? '한국어' : 'English'}: ${post.data.title}\n\nSource: ${absolute(postPath(post), site)}\n\nPublished: ${post.data.publishedAt.toISOString().slice(0,10)}\n\nSummary: ${post.data.description}\n\n${await readableBody(post, site)}`));
-  const text = `# Anyway / ${posts[0].data.translationKey}\n\nTags: ${uniqueTags(posts.flatMap(p => p.data.tags)).join(', ')}\n\nThis document contains the published translations of one article. Content is extracted from the same rendered article bodies as the human-readable pages. Interactive visuals require their accompanying text descriptions.\n\n${sections.join('\n\n---\n\n')}\n`;
+  const sections = await Promise.all(posts.map(async post => `## ${post.data.lang === 'ko' ? '한국어' : 'English'}: ${post.data.title}\n\nSource: ${absolute(postPath(post), site)}\n\nPublished: ${post.data.publishedAt.toISOString().slice(0,10)}\n\nSummary: ${post.data.description}\n\n${post.data.aiSummary ?? post.data.description}`));
+  const text = `# Anyway / ${posts[0].data.translationKey}\n\nTags: ${uniqueTags(posts.flatMap(p => p.data.tags)).join(', ')}\n\nConcise editorial summaries of one article. Observations, planned setup, and unverified steps are distinguished below. Follow the source links for the full experiment logs.\n\n${sections.join('\n\n---\n\n')}\n`;
   return new Response(text, { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } });
 };

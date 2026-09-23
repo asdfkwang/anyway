@@ -18,7 +18,8 @@ test('every indexed translation has HTML, metadata, and a shared AI document', a
     assert.equal(structured.headline, entry.title);
     assert.equal(structured.inLanguage, entry.lang);
     assert.deepEqual(structured.keywords, entry.tags);
-    assert.ok(markdown.includes(entry.body));
+    assert.ok(markdown.includes(entry.aiSummary));
+    if (entry.body !== entry.aiSummary) assert.ok(!markdown.includes(entry.body));
     assert.ok(markdown.includes(entry.url));
     assert.ok(!markdown.includes('<script'));
   }
