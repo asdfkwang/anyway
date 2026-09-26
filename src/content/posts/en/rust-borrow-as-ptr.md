@@ -17,6 +17,17 @@ aiSummary: |
   - Branch: https://github.com/asdfkwang/linux/tree/rust-borrow-as-ptr-v1
   - Recommendation source: https://rust-lang.github.io/rust-clippy/master/index.html#borrow_as_ptr
   - This entry does not report test results, mailing-list review, or upstream acceptance.
+
+  ## v2 correction — 2026-09-26
+
+  This addendum supersedes the original rationale where they conflict; the original article is preserved as a historical record.
+  - Outcome: PR https://github.com/Rust-for-Linux/linux/pull/1257 was closed by the author after review. This v2 is an article addendum, not a revised patch submission.
+  - Task origin: Rust-for-Linux issue https://github.com/Rust-for-Linux/linux/issues/1152 requested cleanup and lint enablement, but did not establish that every individual transformation was justified.
+  - Concrete error: In core::ptr::read(&raw const *b), dereferencing the Box through Deref still creates a reference. Raw borrow syntax does not eliminate that step; the reviewer said the change obscured it without changing behavior.
+  - Rationale rejected: The reviewed FFI calls still require appropriate alignment, initialization, and aliasing conditions. General raw-pointer construction properties did not justify replacing valid local borrows throughout the tree.
+  - Evidence limit: The PR reported builds, Clippy checks, and a QEMU boot. Those observations do not establish the semantic benefit or necessity of each change.
+  - AI collaboration failure: The AI generalized lint documentation without adequately checking actual call sites; the author relied on the explanation without sufficient independent verification.
+  - Lesson: Trace concrete types, Deref behavior, and callee contracts; establish a specific problem or benefit before broad edits. Check original issue submission requirements, including mailing lists, Suggested-by, and an issue Link tag.
 ---
 
 Last time, I spent a whole day getting a kernel to boot.
@@ -129,3 +140,82 @@ Last time, a day went into getting the boot environment working. This time, what
 At least I've finally written a blog post about a patch after all those kernel configuration notes.
 
 The work is on the [`rust-borrow-as-ptr-v1` branch](https://github.com/asdfkwang/linux/tree/rust-borrow-as-ptr-v1).
+
+---
+
+## v2 — I Trusted the AI's Explanation and Opened a PR (2026-09-26)
+
+I'm leaving the original post above intact. It records how I understood the work before the PR review.
+
+There were problems with that understanding.
+
+I opened [PR #1257](https://github.com/Rust-for-Linux/linux/pull/1257) and received feedback. It caught me off guard. I'd followed the AI's recommendations and explanations, then written a blog post around them. But I couldn't properly justify the changes themselves.
+
+Sigh. Getting rid of warnings and producing a good patch were different things.
+
+### Having a starting point didn't make the conclusion right
+
+There really was a related [Rust-for-Linux issue, #1152](https://github.com/Rust-for-Linux/linux/issues/1152). It asked for existing occurrences to be cleaned up and the borrow_as_ptr lint enabled.
+
+The task had a basis. Whether each change I made was appropriate was a separate question.
+
+Following the AI's explanation, I crossed that gap too easily. The AI applied Clippy's general rationale to actual kernel code without sufficiently checking whether it held for each change.
+
+The result was a plausible explanation in both the PR and the post above. An explanation that read well had taken the place of verification.
+
+### Writing &raw didn't remove every reference
+
+One of the reviewed changes was this:
+
+```diff
+- let value = unsafe { core::ptr::read(&*b) };
++ let value = unsafe { core::ptr::read(&raw const *b) };
+```
+
+On the surface, it replaces a reference expression with a raw borrow. Following the explanation in the original post, it looks like an intermediate reference has been removed.
+
+But `*b` goes through `Deref`, which already produces a reference. Putting `&raw const` outside it doesn't remove that step.
+
+The reviewer pointed out that this hides the reference creation without changing the behavior. [Review comment](https://github.com/Rust-for-Linux/linux/pull/1257#discussion_r4111194685)
+
+Oh. I'd been explaining the surface syntax.
+
+The AI missed that distinction, and I didn't trace its explanation through what the code actually did. The earlier statement about obtaining a pointer without creating a reference cannot be applied across these changes as a blanket explanation.
+
+### Saying FFI wasn't enough to justify the change
+
+The reviewer also questioned why several borrows of local variables should be weakened to raw borrows. [Review](https://github.com/Rust-for-Linux/linux/pull/1257#pullrequestreview-5325723184)
+
+My explanation emphasized the alignment, initialization, and aliasing requirements of an intermediate reference. The reviewer pointed out that the FFI calls in question still needed those conditions satisfied. [Follow-up comment](https://github.com/Rust-for-Linux/linux/pull/1257#issuecomment-5845864171)
+
+I needed to distinguish constructing a raw pointer from passing it to a function that uses it. The general ability to avoid creating a reference didn't establish that a raw borrow was better at these call sites.
+
+Concluding that raw borrows are useless would be another mistake. What I needed to establish was why one was appropriate in this particular code.
+
+### What the tests showed, and what still needed explaining
+
+The PR reported build, Clippy, and QEMU boot results.
+
+Those results didn't establish the need for the changes. Removing warnings demonstrates that the warnings went away. Booting demonstrates that the tested environment booted. Neither, by itself, explains the semantics or benefit of each edit.
+
+I blurred those things while accepting the AI's explanation. The code built, and the explanation sounded reasonable, so I moved on as though the rationale had also been checked.
+
+The review exposed that missing step.
+
+### I closed the PR. I'm keeping the post
+
+I accepted the feedback and closed the PR. This v2 is an addendum to the original record, not a second version of the patch series.
+
+The AI's explanation contained missing checks and incorrect generalizations. I submitted the PR under my name without sufficiently verifying that explanation. Both belong in this record.
+
+Next time, I want to go beyond asking the AI for the edits. I'll start with a representative call site, follow the actual types, `Deref`, and the called function's requirements, and explain in my own words what is wrong with the old code. If nothing is wrong, I still need to ask what the change gains.
+
+If I can't explain that, I'm not ready to write the PR description.
+
+I also need to check the original issue's submission requirements. #1152 asked for mailing-list submission, a Suggested-by tag, and a Link tag pointing to the issue. Linking the Clippy documentation wasn't a substitute for reading the full request.
+
+I was confused and embarrassed. Having already published the blog post made it worse.
+
+Still, I don't want to quietly rewrite it as though I'd understood all this from the start. This is what I thought then. The review showed where it was wrong.
+
+The AI could provide an explanation. Understanding and checking that explanation was still work I needed to do.
