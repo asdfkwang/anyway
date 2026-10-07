@@ -86,6 +86,16 @@ MDX에서는 Astro 컴포넌트를 import할 수 있습니다. Canvas, SVG, 브�
 
 나중에 https://giscus.app 에서 저장소 Discussions와 giscus 앱을 설정한 후, 생성한 스크립트를 이 컴포넌트에 추가하세요. `data-mapping="specific"`, `data-term={translationKey}`를 사용하면 한영 글이 같은 토론을 공유합니다. `data-lang`은 현재 언어로 지정하세요. 별도의 토론을 원하면 term에 언어를 포함하세요. 저장소 ID와 카테고리 ID는 giscus에서 받은 실제 값을 사용해야 합니다.
 
+## 방문 통계
+
+GoatCounter 집계 주소는 `https://kwang.goatcounter.com/count`이며, 통계는 [GoatCounter 대시보드](https://kwang.goatcounter.com/)에서 확인합니다. 날짜 범위를 선택하고 `View by: day`로 바꾸면 일별 추이를 볼 수 있습니다.
+
+`src/layouts/Base.astro`는 production 빌드에서 집계 스크립트를 로드합니다. 한·영 홈, 글, 태그, 검색 페이지에 적용되며 `npm run dev`에서는 로드하지 않습니다. 자동으로 언어별 홈으로 이동하는 루트 페이지는 집계하지 않아 진입 시 중복 기록을 피합니다. AI용 Markdown과 JSON 인덱스도 집계 대상이 아닙니다.
+
+집계는 연결 이후부터 시작합니다. 방문 통계가 보이지 않으면 브라우저의 광고 차단기가 `gc.zgo.at` 또는 `kwang.goatcounter.com` 요청을 막는지 확인하세요. GoatCounter의 기본 방문 집계는 반복된 페이지 로드를 구분하므로 실제 사람 수와 완전히 일치하는 수치는 아닙니다.
+
+공식 연결 문서: https://www.goatcounter.com/help/start
+
 ## 사람용 한·영 + AI용 발행
 
 글의 한·영 파일에 같은 `translationKey`를 지정하면 빌드 시 세 가지 읽기 경로를 함께 만듭니다.

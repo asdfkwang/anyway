@@ -28,6 +28,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="Anyway" />
     <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
+    {import.meta.env.PROD && <script is:inline data-goatcounter="https://kwang.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>}
   </head>
   <body>
     <a class="skip" href="#main">{copy[lang].skip}</a>
